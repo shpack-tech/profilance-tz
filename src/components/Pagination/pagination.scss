@@ -1,0 +1,19 @@
+.pagination {
+	display: flex;
+	margin-top: 20px;
+	&__item {
+		height: 50px;
+		width: 50px;
+	}
+	&__dots {
+		display: flex;
+		justify-content: center;
+		align-items: flex-end;
+		padding-bottom: 7px;
+		box-sizing: border-box;
+		width: 50px;
+	}
+	div + div {
+		margin-left: 10px;
+	}
+}

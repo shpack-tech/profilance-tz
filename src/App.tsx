@@ -1,58 +1,47 @@
 import React from 'react';
-import logo from './logo.svg';
-import { Counter } from './features/counter/Counter';
-import './App.css';
+import LinkList from './components/LinkList/LinkList';
+import LinkShortenerForm from './components/LinkShortenerForm/LinkShortenerForm';
+import MyLinks from './components/MyLinks/MyLinks';
+import Echo from 'laravel-echo';
+import { ApolloClient, InMemoryCache, ApolloProvider, HttpLink } from '@apollo/client';
+import { useDispatch } from 'react-redux';
+import { updateLink } from './features/myLinks';
+import { updateAllLinks } from './features/allLinks';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-        </span>
-      </header>
-    </div>
-  );
-}
+const link = new HttpLink({ uri: 'http://test-task.profilancegroup-tech.com/graphql' });
+
+const client = new ApolloClient({
+	cache: new InMemoryCache(),
+	link: link,
+});
+
+const App: React.FC = () => {
+	const dispatch = useDispatch();
+	window.io = require('socket.io-client');
+	const echo = new Echo({
+		broadcaster: 'socket.io',
+		host: 'http://test-task.profilancegroup-tech.com:6002',
+	});
+
+	echo.channel('btti_database_short_urls').listen('.new_click', (e: any) => {
+		dispatch(updateLink(e)); // обновление Мои ссылки
+		dispatch(updateAllLinks(e)); // обновление Список ссылок
+	});
+
+	return (
+		<ApolloProvider client={client}>
+			<header>
+				<h1 className="logo">Сокращатель</h1>
+			</header>
+			<div className="content-container">
+				<div>
+					<LinkShortenerForm />
+					<MyLinks />
+				</div>
+				<LinkList />
+			</div>
+		</ApolloProvider>
+	);
+};
 
 export default App;
